@@ -1,0 +1,38 @@
+name: Update Submodule on PR
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  update-submodule:
+    runs-on: ubuntu-latest
+    environment: LinLee
+    steps:
+      - name: Checkout main repository
+        uses: actions/checkout@v2
+
+      - name: Checkout NYCU-ME repository
+        uses: actions/checkout@v2
+        with:
+          repository: 'NYCU-ME/backend'
+          token: ${{ secrets.TOKEN }}
+          path: 'backend'
+
+      - name: Update submodule
+        run: |
+          cd backend
+          git submodule update --remote --merge
+          git commit -am "Update app submodule"
+          git push
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.TOKEN }}
+          commit-message: Update submodule
+          title: Update submodule
+          body: Updating submodule from main repository.
+          branch: update-submodule-${{ github.event.pull_request.head.ref }}
+          base: main
+
